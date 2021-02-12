@@ -57,6 +57,7 @@ router.get(
     });
   }
 );
+
 router.post(
   "/voter",
   passport.authenticate("jwt", { session: false }),
@@ -87,4 +88,109 @@ router.post(
     });
   }
 );
+
+router.post(
+  "/finish",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role) {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `UPDATE question SET finished = 1  WHERE id = ${req.body.id}`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(true);
+      }
+    });
+  }
+);
+
+router.get(
+  "/members",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role) {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `SELECT * FROM users WHERE votant = 0`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(result);
+      }
+    });
+  }
+);
+
+router.post(
+  "/membervote",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role) {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `UPDATE users  SET votant = 1  WHERE id = ${req.body.id}`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(true);
+      }
+    });
+  }
+);
+
+router.post(
+  "/addvote",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role) {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `INSERT INTO question( ques) VALUES ('${req.body.question}')`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        for (let i = 0; i < req.body.reponses.length; i++) {
+          const sql = `INSERT INTO reponse(id_ques, reponse) VALUES ('${result.insertId}','${req.body.reponses[i]}')`;
+          con.query(sql, function (err, resulte) {
+            if (err) {
+              res.json({ err: err });
+            }
+          });
+        }
+        res.send(true);
+      }
+    });
+  }
+);
+
 module.exports = router;
