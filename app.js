@@ -5,7 +5,9 @@ var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var cors = require("cors");
 require("dotenv").config();
-
+var genKeyPair = require("./config/generateKeypair");
+genKeyPair(); //generate the public and private key for authentification
+var passport = require("./config/passportConfig"); //import passportjs configuration (for authentification)
 var app = express();
 
 // view engine setup
@@ -17,7 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
+app.use(passport.initialize());
 app.use("/api", require("./routes/index"));
 
 // catch 404 and forward to error handler
