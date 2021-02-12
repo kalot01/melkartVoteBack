@@ -16,7 +16,7 @@ router.get(
     }
   },
   function (req, res, next) {
-    const sql = `SELECT * FROM question WHERE 1`;
+    const sql = `SELECT * FROM question WHERE 1 ORDER BY id DESC`;
     con.query(sql, function (err, result) {
       if (err) {
         res.json({ err: err });
@@ -40,7 +40,7 @@ router.get(
     }
   },
   function (req, res, next) {
-    const sql = `SELECT * FROM reponse WHERE id_ques = '${req.query.id}'`;
+    const sql = `SELECT * FROM reponse WHERE id_ques = '${req.query.id}' ORDER BY id DESC`;
     con.query(sql, function (err, result) {
       if (err) {
         res.json({ err: err });
@@ -71,7 +71,8 @@ router.post(
     }
   },
   function (req, res, next) {
-    const sql = `UPDATE reponse SET nbvotes= nbvotes + ${req.body.compt}  WHERE id = ${req.body.idreponse}`;
+    let compt = req.user.role == "b" ? 2 : 1;
+    const sql = `UPDATE reponse SET nbvotes= nbvotes + ${compt}  WHERE id = ${req.body.idreponse}`;
     con.query(sql, function (err, result) {
       if (err) {
         res.json({ err: err });
@@ -93,7 +94,7 @@ router.post(
   "/finish",
   passport.authenticate("jwt", { session: false }),
   function (req, res, next) {
-    if (req.user.role) {
+    if (req.user.role == "b") {
       next();
     } else {
       res.json({
@@ -126,7 +127,7 @@ router.get(
     }
   },
   function (req, res, next) {
-    const sql = `SELECT * FROM users WHERE votant = 0`;
+    const sql = `SELECT * FROM users WHERE votant = 0 ORDER BY nom ASC`;
     con.query(sql, function (err, result) {
       if (err) {
         res.json({ err: err });
@@ -141,7 +142,7 @@ router.post(
   "/membervote",
   passport.authenticate("jwt", { session: false }),
   function (req, res, next) {
-    if (req.user.role) {
+    if (req.user.role == "b") {
       next();
     } else {
       res.json({
@@ -165,7 +166,7 @@ router.post(
   "/addvote",
   passport.authenticate("jwt", { session: false }),
   function (req, res, next) {
-    if (req.user.role) {
+    if (req.user.role == "b") {
       next();
     } else {
       res.json({
@@ -193,4 +194,27 @@ router.post(
   }
 );
 
+router.get(
+  "/votant",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role) {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `SELECT * FROM users WHERE id = '${req.user.id}'`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(result[0].votant == 1);
+      }
+    });
+  }
+);
 module.exports = router;
