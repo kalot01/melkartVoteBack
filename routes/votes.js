@@ -114,11 +114,83 @@ router.post(
   }
 );
 
+router.post(
+  "/begin",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role == "b") {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `UPDATE question SET finished = 0  WHERE id = ${req.body.id}`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(true);
+      }
+    });
+  }
+);
+
+router.post(
+  "/visible",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role == "b") {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `UPDATE question SET visible = 1  WHERE id = ${req.body.id}`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(true);
+      }
+    });
+  }
+);
+
+router.post(
+  "/hide",
+  passport.authenticate("jwt", { session: false }),
+  function (req, res, next) {
+    if (req.user.role == "b") {
+      next();
+    } else {
+      res.json({
+        err: "vous devez vous connecter",
+      });
+    }
+  },
+  function (req, res, next) {
+    const sql = `UPDATE question SET visible = 0  WHERE id = ${req.body.id}`;
+    con.query(sql, function (err, result) {
+      if (err) {
+        res.json({ err: err });
+      } else {
+        res.send(true);
+      }
+    });
+  }
+);
+
 router.get(
   "/members",
   passport.authenticate("jwt", { session: false }),
   function (req, res, next) {
-    if (req.user.role) {
+    if (req.user.role == "b") {
       next();
     } else {
       res.json({
